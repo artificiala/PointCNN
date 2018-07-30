@@ -81,7 +81,6 @@ def process_pointcloud(filename_npy, args, folder, dataset):
     rgb = rgb / 255 - 0.5
     
     number_of_points = xyz.shape[0]
-    del data
 
 
     # print(xyzrgb[0]) debug check rgb normalize
