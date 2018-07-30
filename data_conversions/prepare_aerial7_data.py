@@ -42,7 +42,9 @@ def main():
         for dataset_idx, dataset in enumerate(datasets):
             filename_npy = os.path.join(folder, dataset + '.npy')
             # list_of_files.append(filename_npy)
-            processes.append(Process(target=process_pointcloud, args=(filename_npy, args, folder,dataset)))
+            processes.append(Process(target=process_pointcloud, args=(filename_npy, args, folder,dataset, dataset_idx)))
+            # break
+        # break
 
     # Important MULTIPROCESS 20 CORE = 20 FILE 3 GB PER FILE 
     # Run processes
@@ -54,7 +56,7 @@ def main():
         p.join()
    
              
-def process_pointcloud(filename_npy, args, folder, dataset):
+def process_pointcloud(filename_npy, args, folder, dataset,dataset_idx):
     
     max_point_num = args.max_point_num
     
@@ -71,17 +73,16 @@ def process_pointcloud(filename_npy, args, folder, dataset):
     print('process id:', os.getpid())
     print('{}-Loading {}...'.format(datetime.now(), filename_npy))
       # load data
-    data = np.load(filename_npy)
+    data_loaded = np.load(filename_npy)
     
-    xyz = np.array(data[:, 0:3], dtype='float32')
-    rgb = np.array(data[:, 3:7], dtype='float32')
-    labels = np.array(data[:, 7], dtype='uint8')
+    xyz = np.array(data_loaded[:, 0:3], dtype='float32')
+    rgb = np.array(data_loaded[:, 3:6], dtype='float32')
+    labels = np.array(data_loaded[:, 6], dtype='uint8')
 
     # normalize rgb
     rgb = rgb / 255 - 0.5
-    
-    number_of_points = xyz.shape[0]
 
+    number_of_points = xyz.shape[0]
 
     # print(xyzrgb[0]) debug check rgb normalize
 
@@ -188,6 +189,7 @@ def process_pointcloud(filename_npy, args, folder, dataset):
             block_points = block_points - block_center  # align to block bottom center
             x, y, z = np.split(block_points, (1, 2), axis=-1)
             block_xzyrgb = np.concatenate([x, z, y, rgb[point_indices]], axis=-1)
+            # print('block_xzyrgb.shape', block_xzyrgb.shape)
             block_labels = labels[point_indices]
 
             for block_split_idx in range(block_split_num):
