@@ -67,8 +67,20 @@ def main():
         seg_list_idx = seg_list_idx + 1
     else:
         filelist_train = args.filelist
+
+
+    # for validation set
+    is_list_of_h5_list = not data_utils.is_h5_list(args.filelist_val)
+    if is_list_of_h5_list:
+        seg_list = data_utils.load_seg_list(args.filelist_val)
+        seg_list_idx = 0
+        filelist_val = seg_list[seg_list_idx]
+        seg_list_idx = seg_list_idx + 1
+    else:
+        filelist_val = args.filelist_val
+
     data_train, _, data_num_train, label_train, _ = data_utils.load_seg(filelist_train)
-    data_val, _, data_num_val, label_val, _ = data_utils.load_seg(args.filelist_val)
+    data_val, _, data_num_val, label_val, _ = data_utils.load_seg(filelist_val)
 
     # shuffle
     data_train, data_num_train, label_train = \
