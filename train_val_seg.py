@@ -67,27 +67,13 @@ def main():
         seg_list_idx = seg_list_idx + 1
     else:
         filelist_train = args.filelist
-
-
-    # for validation set
-    is_list_of_h5_list = not data_utils.is_h5_list(args.filelist_val)
-    if is_list_of_h5_list:
-        seg_list_val = data_utils.load_seg_list(args.filelist_val)
-        seg_list_val_idx = 0
-        filelist_val = seg_list[seg_list_val_idx]
-        seg_list_val_idx = seg_list_idx + 1
-    else:
-        filelist_val = args.filelist_val
-
+        
     data_train, _, data_num_train, label_train, _ = data_utils.load_seg(filelist_train)
-    data_val, _, data_num_val, label_val, _ = data_utils.load_seg(filelist_val)
+    data_val, _, data_num_val, label_val, _ = data_utils.load_seg(args.filelist_val)
 
     # shuffle
     data_train, data_num_train, label_train = \
         data_utils.grouped_shuffle([data_train, data_num_train, label_train])
-    
-    data_val, data_num_val, label_val = \
-        data_utils.grouped_shuffle([data_val, data_num_val, label_val])
 
     num_train = data_train.shape[0]
     point_num = data_train.shape[1]
@@ -220,19 +206,6 @@ def main():
 
                 sess.run(reset_metrics_op)
                 for batch_val_idx in range(batch_num_val):
-
-                    if is_list_of_h5_list:
-                        filelist_val_prev = seg_list_val[(seg_list_val_idx - 1) % len(seg_list_val)]
-                        filelist_val = seg_list_val[seg_list_val_dx % len(seg_list_val)]
-                        if filelist_val != filelist_val_prev:
-                            data_train, _, data_num_train, label_train, _ = data_utils.load_seg(filelist_val)
-                            num_val = data_val.shape[0]
-
-                        seg_list_val_idx = seg_list_val_idx + 1
-                        data_val, data_num_val, label_val = \
-                            data_utils.grouped_shuffle([data_val, data_num_val, label_val])
-            
-
                     start_idx = batch_size * batch_val_idx
                     end_idx = min(start_idx + batch_size, num_val)
                     batch_size_val = end_idx - start_idx
@@ -285,8 +258,6 @@ def main():
                     seg_list_idx = seg_list_idx + 1
                 data_train, data_num_train, label_train = \
                     data_utils.grouped_shuffle([data_train, data_num_train, label_train])
-            
-
 
             offset = int(random.gauss(0, sample_num * setting.sample_num_variance))
             offset = max(offset, -sample_num * setting.sample_num_clip)
