@@ -21,7 +21,7 @@ def main():
     args = parser.parse_args()
     print(args)
 
-    root = args.folder if args.folder else '../../data/aerial7/data'
+    root = args.folder if args.folder else '../../data/aerial7-pcnn/data'
     splits = ['train', 'test']
     
     split_filelists = dict()
