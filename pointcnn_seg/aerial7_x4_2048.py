@@ -2,7 +2,7 @@
 import math
 num_class = 8
 
-sample_num = 1024
+sample_num = 2048
 
 batch_size = 12
 
