@@ -58,24 +58,8 @@ def main():
     test_list = os.path.join(root, 'test_files.txt')
     print('{}-Saving {}...'.format(datetime.now(), test_list))
     with open(test_list, 'w') as filelist:
-        list_num = math.ceil(len(test_h5) / args.h5_num)
-        for list_idx in range(list_num):
-            train_list_i = os.path.join(root, 'filelists', 'test_files_g_%d.txt' % list_idx)
-            with open(train_list_i, 'w') as filelist_i:
-                for h5_idx in range(args.h5_num):
-                    filename_idx = list_idx * args.h5_num + h5_idx
-                    if filename_idx > len(test_h5) - 1:
-                        break
-                    filename_h5 = test_h5[filename_idx]
-                    print('filename_h5', filename_h5)
-
-                    filelist_i.write('../' + filename_h5)
-            for repeat_idx in range(args.repeat_num):
-                filelist.write('./filelists/test_files_g_%d.txt\n' % list_idx)
-            print('---')
-
-
-
+        for filename_h5 in test_h5:
+            filelist.write(filename_h5)
 
 if __name__ == '__main__':
     main()
