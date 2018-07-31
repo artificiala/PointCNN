@@ -15,7 +15,7 @@ from datetime import datetime
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--folder', '-f', help='Path to data folder')
-    parser.add_argument('--h5_num', '-d', help='Number of h5 files to be loaded each time', type=int, default=4)
+    parser.add_argument('--h5_num', '-d', help='Number of h5 files to be loaded each time', type=int, default=10)
     parser.add_argument('--repeat_num', '-r', help='Number of repeatly using each loaded h5 list', type=int, default=2)
 
     args = parser.parse_args()
@@ -39,16 +39,19 @@ def main():
     with open(train_list, 'w') as filelist:
         list_num = math.ceil(len(train_h5) / args.h5_num)
         for list_idx in range(list_num):
-            train_val_list_i = os.path.join(root, 'filelists', 'train_files_g_%d.txt' % list_idx)
-            with open(train_list, 'w') as filelist_i:
+            train_list_i = os.path.join(root, 'filelists', 'train_files_g_%d.txt' % list_idx)
+            with open(train_list_i, 'w') as filelist_i:
                 for h5_idx in range(args.h5_num):
                     filename_idx = list_idx * args.h5_num + h5_idx
                     if filename_idx > len(train_h5) - 1:
                         break
                     filename_h5 = train_h5[filename_idx]
+                    print('filename_h5', filename_h5)
+
                     filelist_i.write('../' + filename_h5)
             for repeat_idx in range(args.repeat_num):
                 filelist.write('./filelists/train_files_g_%d.txt\n' % list_idx)
+            print('---')
 
     # write test files
     test_h5 = split_filelists['test']
