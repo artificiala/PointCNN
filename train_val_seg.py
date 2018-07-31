@@ -67,7 +67,6 @@ def main():
         seg_list_idx = seg_list_idx + 1
     else:
         filelist_train = args.filelist
-        
     data_train, _, data_num_train, label_train, _ = data_utils.load_seg(filelist_train)
     data_val, _, data_num_val, label_val, _ = data_utils.load_seg(args.filelist_val)
 
