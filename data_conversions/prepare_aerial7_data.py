@@ -36,8 +36,7 @@ def main():
 
     processes = []
     list_of_files = []
-    folders = [os.path.join(root, folder) for folder in ['test']]
-    #folders = [os.path.join(root, folder) for folder in ['train', 'test']]
+    folders = [os.path.join(root, folder) for folder in ['train', 'test']]
     for folder in folders:
         datasets = [filename[:-4] for filename in os.listdir(folder) if filename.endswith('.npy')]
         for dataset_idx, dataset in enumerate(datasets):
