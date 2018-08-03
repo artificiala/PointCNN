@@ -61,7 +61,7 @@ sampling = 'fps'
 optimizer = 'adam'
 epsilon = 1e-3
 
-data_dim = 6
+data_dim = 7
 use_extra_features = True
 with_normal_feature = False
 with_X_transformation = True
