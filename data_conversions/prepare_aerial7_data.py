@@ -22,21 +22,22 @@ def main():
     parser = argparse.ArgumentParser()
     # parser.add_argument('--filename', '-ff', help='Path to file')
 
-    parser.add_argument('--folder', '-f', help='Path to data folder', default='../../data/aerial7/data')
+    parser.add_argument('--folder', '-f', help='Path to data folder', default='../../data/aerial7-pcnn/data')
     parser.add_argument('--max_point_num', '-m', help='Max point number of each sample', type=int, default=8192)
     parser.add_argument('--block_size', '-b', help='Block size', type=float, default=5.0)
     parser.add_argument('--grid_size', '-g', help='Grid size', type=float, default=0.1)
     args = parser.parse_args()
     print(args)
     
-    root = args.folder if args.folder else '../../data/aerial7/data'
+    root = args.folder if args.folder else '../../data/aerial7-pcnn/data'
 
    
 
 
     processes = []
     list_of_files = []
-    folders = [os.path.join(root, folder) for folder in ['train', 'test']]
+    folders = [os.path.join(root, folder) for folder in ['test']]
+    #folders = [os.path.join(root, folder) for folder in ['train', 'test']]
     for folder in folders:
         datasets = [filename[:-4] for filename in os.listdir(folder) if filename.endswith('.npy')]
         for dataset_idx, dataset in enumerate(datasets):
@@ -50,7 +51,6 @@ def main():
     # Run processes
     for p in processes:
         p.start()
-
     # Exit the completed processes
     for p in processes:
         p.join()
@@ -61,7 +61,7 @@ def process_pointcloud(filename_npy, args, folder, dataset,dataset_idx):
     max_point_num = args.max_point_num
     
     batch_size = 2048
-    data = np.zeros((batch_size, max_point_num, 6)) # x,y,z,r,g,b
+    data = np.zeros((batch_size, max_point_num, 7)) # x,y,z,r,g,b
     data_num = np.zeros((batch_size), dtype=np.int32)
     label = np.zeros((batch_size), dtype=np.int32)
     label_seg = np.zeros((batch_size, max_point_num), dtype=np.int32)
@@ -72,19 +72,17 @@ def process_pointcloud(filename_npy, args, folder, dataset,dataset_idx):
     print('parent process:', os.getppid())
     print('process id:', os.getpid())
     print('{}-Loading {}...'.format(datetime.now(), filename_npy))
-      # load data
+    # load data
     data_loaded = np.load(filename_npy)
     
-    xyz = np.array(data_loaded[:, 0:3], dtype='float32')
-    rgb = np.array(data_loaded[:, 3:6], dtype='float32')
+    xyzirgb = np.array(data_loaded[:, 0:7], dtype='float32')
     labels = np.array(data_loaded[:, 7], dtype='uint8')
 
-    # normalize rgb
+    xyz, i, rgb = np.split(xyzirgb, (3, 4), axis=-1)
+    i = i / 2000 + 0.5
     rgb = rgb / 255 - 0.5
-
+    
     number_of_points = xyz.shape[0]
-
-    # print(xyzrgb[0]) debug check rgb normalize
 
     offsets = [('zero', 0.0), ('half', args.block_size / 2)]
     
@@ -188,8 +186,7 @@ def process_pointcloud(filename_npy, args, folder, dataset,dataset_idx):
             block_center[0][-1] = block_min[0][-1]
             block_points = block_points - block_center  # align to block bottom center
             x, y, z = np.split(block_points, (1, 2), axis=-1)
-            block_xzyrgb = np.concatenate([x, z, y, rgb[point_indices]], axis=-1)
-            # print('block_xzyrgb.shape', block_xzyrgb.shape)
+            block_xzyrgbi = np.concatenate([x, z, y, rgb[point_indices], i[point_indices]], axis=-1)
             block_labels = labels[point_indices]
 
             for block_split_idx in range(block_split_num):
@@ -197,7 +194,7 @@ def process_pointcloud(filename_npy, args, folder, dataset,dataset_idx):
                 point_num = point_nums[block_split_idx]
                 end = start + point_num
                 idx_in_batch = idx % batch_size
-                data[idx_in_batch, 0:point_num, ...] = block_xzyrgb[start:end, :]
+                data[idx_in_batch, 0:point_num, ...] = block_xzyrgbi[start:end, :]
                 data_num[idx_in_batch] = point_num
                 label[idx_in_batch] = dataset_idx  # won't be used...
                 label_seg[idx_in_batch, 0:point_num] = block_labels[start:end]
