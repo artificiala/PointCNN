@@ -77,7 +77,7 @@ def process_pointcloud(filename_npy, args, folder, dataset,dataset_idx):
     
     xyz = np.array(data_loaded[:, 0:3], dtype='float32')
     rgb = np.array(data_loaded[:, 3:6], dtype='float32')
-    labels = np.array(data_loaded[:, 6], dtype='uint8')
+    labels = np.array(data_loaded[:, 7], dtype='uint8')
 
     # normalize rgb
     rgb = rgb / 255 - 0.5
